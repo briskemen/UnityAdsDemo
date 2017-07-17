@@ -1,6 +1,8 @@
 package com.briskemen.unityadsdemo;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -15,6 +17,23 @@ public class MainActivity extends AppCompatActivity {
     //private String gameId = "1481582";
 
     private String gameId = "1481589";
+
+    private boolean isShowAds;
+    private Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    if (UnityAds.isReady()) {
+                        UnityAds.show(MainActivity.this);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,22 +41,15 @@ public class MainActivity extends AppCompatActivity {
 
 
         final UnityAdsListener unityAdsListener = new UnityAdsListener();
-
-        findViewById(R.id.btn_init).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                UnityAds.setListener(unityAdsListener);
-                UnityAds.initialize(MainActivity.this, gameId, unityAdsListener);
-            }
-        });
-
+        UnityAds.setListener(unityAdsListener);
+        UnityAds.initialize(MainActivity.this, gameId, unityAdsListener);
 
         findViewById(R.id.btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (UnityAds.isReady()){
+                    UnityAds.show(MainActivity.this);
                 }
-                UnityAds.show(MainActivity.this);
             }
         });
     }
@@ -56,6 +68,12 @@ public class MainActivity extends AppCompatActivity {
             DeviceLog.debug("onUnityAdsReady: " + zoneId);
             Log.i(TAG,"==========onUnityAdsReady==="+zoneId);
             toast("Ready", zoneId);
+            if (!isShowAds) {
+                isShowAds = true;
+                Message msg = Message.obtain();
+                msg.what = 1;
+                mHandler.sendMessage(msg);
+            }
         }
 
         @Override
